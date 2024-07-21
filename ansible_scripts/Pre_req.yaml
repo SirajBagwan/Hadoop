@@ -81,6 +81,35 @@
       ansible.builtin.debug:
         msg: nscd version is {{ output_nscd.stdout  }}
 
+# Disabling Transparent Huge Pages
+    - name: check of script is already present in rc.local
+      shell: "grep \"/sys/kernel/mm/transparent_hugepage/enabled\" /etc/rc.local "
+      register: output_thp
+      ignore_errors: true
+
+    - name: checking for THP
+      shell: " echo \"if test -f /sys/kernel/mm/transparent_hugepage/enabled; then\n
+  echo never > /sys/kernel/mm/transparent_hugepage/enabled \n
+fi\n
+if test -f /sys/kernel/mm/transparent_hugepage/defrag; then \n
+  echo never > /sys/kernel/mm/transparent_hugepage/defrag \n
+fi\n
+\" >> /etc/rc.local"
+      when:
+        output_thp.rc != 0
+
+    - name: reloading rc.d
+      shell: "source /etc/rc.local"
+
+    - name: verifying disbled thp
+      shell: "cat /sys/kernel/mm/transparent_hugepage/enabled"
+      register: val_thp
+
+    - name: Status of THP
+      ansible.builtin.debug:
+        msg: thp is {{ val_thp.stdout }}
+
+
 # Installing Packages
     - name: Installing packages
       yum:
