@@ -1,0 +1,16 @@
+---
+- name: generating client configuration for kerberos
+  hosts: web
+  become: true
+  tasks:
+    - name: Generating configuration file
+      template:
+        src: krbconf.j2
+        dest: /etc/krb.conf
+        owner: root
+        group: root
+        mode: '0644'
+      vars:
+        realmname: myrealm
+        kdchostname: myhost
+        kdcadminserverhostname: myhost
