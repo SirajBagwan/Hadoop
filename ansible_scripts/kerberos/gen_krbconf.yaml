@@ -1,6 +1,6 @@
 ---
 - name: generating client configuration for kerberos
-  hosts: web
+  hosts: all
   become: true
   tasks:
     - name: Generating configuration file
