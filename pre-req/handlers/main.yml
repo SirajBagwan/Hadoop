@@ -49,3 +49,10 @@
   ansible.builtin.debug:
     msg: "{{ val_thp.stdout }}"
 
+# Handlers for tuned
+- name: status of tuned
+  ansible.builtin.debug:
+    msg: tuned package is removed
+    
+- name: reloading sysctl daemon
+  shell: "systemctl daemon-reload"
