@@ -76,3 +76,19 @@ fi\n
 - name: Installing packages
   yum:
     name: "{{ tools  }}"
+- name: check tuned
+      shell: "service tuned status"
+      register: val
+      ignore_errors: yes
+
+# Removing Tuned package
+    - name: Removing tuned
+      ansible.builtin.dnf:
+         name: tuned
+         state: removed
+         autoremove: yes
+      when:
+        val.rc == 0
+      notify:
+        - Status of tuned
+        - Reloading sysctl daemon
