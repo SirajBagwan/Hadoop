@@ -1,0 +1,78 @@
+---
+# Setting up Selinux
+- name: Checking Selinux is installed
+  shell: "getenforce"
+  register: val_selinux
+  ignore_errors: yes
+
+- name: Disabling selinux
+  shell: "echo \"SELINUX=disabled\">/etc/selinux/config"
+  notify:
+    - Print Selinux status
+  when:
+    val_selinux.failed == false
+
+# Setting swappiness to 1
+- name: Setting swappiness
+  sysctl:
+    name: vm.swappiness
+    value: 1
+    state: present
+    reload: yes
+  notify:
+    - Checking swappiness
+    - Verifing swappiness
+
+# Disabling IPV6
+- name: Disabling IPV6
+  sysctl:
+    name: net.ipv6.conf.all.disable_ipv6
+    value: 1
+    state: present
+    reload: yes
+  notify:
+    - Checking IPV6
+    - Verifying IPV6
+
+# Installing NameServer caching daemon
+- name: Verifying nscd package
+  shell: "nscd --version"
+  register: val_nscd
+  ignore_errors: yes
+
+- name: Installing NSCD
+  yum:
+    name: nscd
+    state: present
+  when:
+    val_nscd.failed
+  notify:
+    - Verifying nscd package
+    - Starting nscd
+    - Displying nscd version
+
+# Disabling Transparent Huge Pages
+- name: check of script is already present in rc.local
+  shell: "grep \"/sys/kernel/mm/transparent_hugepage/enabled\" /etc/rc.local "
+  register: output_thp
+  ignore_errors: true
+
+- name: checking for THP
+  shell: " echo \"if test -f /sys/kernel/mm/transparent_hugepage/enabled; then\n
+  echo never > /sys/kernel/mm/transparent_hugepage/enabled \n
+fi\n
+if test -f /sys/kernel/mm/transparent_hugepage/defrag; then \n
+  echo never > /sys/kernel/mm/transparent_hugepage/defrag \n
+fi\n
+\" >> /etc/rc.local"
+  when:
+    output_thp.rc != 0
+  notify:
+    - reloading rc.d
+    - verifying disbled thp
+    - Status of THP
+      
+# Installing tools
+- name: Installing packages
+  yum:
+    name: "{{ tools  }}"

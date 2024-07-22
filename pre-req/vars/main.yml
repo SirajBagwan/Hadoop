@@ -1,0 +1,13 @@
+---
+# vars file for pre-req
+tools:
+  - wget
+  - nano
+  - net-tools
+  - lsof
+  - krb5-workstation
+  - openldap
+  - lzo
+  - lzop
+
+
