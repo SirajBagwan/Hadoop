@@ -92,3 +92,20 @@ fi\n
       notify:
         - Status of tuned
         - Reloading sysctl daemon
+
+# Setting up TCP sack conf
+- name: Setting up TCP sack
+      sysctl:
+        name: net.ipv4.tcp_sack
+        value: 1
+        state: present
+        reload: true
+
+# Setting up maximum length of processor input queues
+    - name: Setting up maximum length of processor input queues
+      sysctl:
+        name: net.core.netdev_max_backlog
+        value: 250000
+        state: present
+        reload: true
+
