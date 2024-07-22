@@ -1,0 +1,5 @@
+---
+# vars file for kerberos
+realmname: myrealm
+kdchostname: myhost
+kdcadminserverhostname: myhost
