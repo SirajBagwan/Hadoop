@@ -2,7 +2,7 @@
 # handlers for Selinux task
 - name: Print Selinux status
   ansible.builtin.debug:
-    msg: Configuration is done please restart !!
+    msg: Selinux disabled please restart to see effect
 
 # handlers for swappiness
 - name: Checking swappiness
