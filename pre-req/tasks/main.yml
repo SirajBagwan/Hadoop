@@ -5,11 +5,9 @@
   register: val_selinux
   ignore_errors: yes
 
-- name: Chagiung status of selinux
-  ansible.builtin.replace:
-    path: /home/ec2-user/try
-    regexp: '^SELINUX='
-    replace: 'SELINUX=Disabled'
+- name: Disable SELinux
+  ansible.posix.selinux:
+    state: disabled
   notify:
     - Print Selinux status
   when:
