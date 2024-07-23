@@ -10,7 +10,7 @@
   notify:
     - Print Selinux status
   when:
-    val_selinux.failed == false
+    val_selinux.rc == 0
 
 # Setting swappiness to 1
 - name: Setting swappiness
