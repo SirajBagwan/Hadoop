@@ -97,7 +97,7 @@ fi\n
         - Status of tuned
         - Reloading sysctl daemon
 
-# Setting up TCP sack conf
+# Setting up TCP Selective acknowledgement conf
 - name: Setting up TCP sack
       sysctl:
         name: net.ipv4.tcp_sack
