@@ -79,7 +79,7 @@ fi\n
     name: "{{ tools  }}"
 - name: check tuned
       shell: "service tuned status"
-      register: val
+      register: val_tuned
       ignore_errors: yes
 
 # Removing Tuned package
@@ -89,7 +89,7 @@ fi\n
          state: removed
          autoremove: yes
       when:
-        val.rc == 0
+        val_tuned.rc == 0
       notify:
         - Status of tuned
         - Reloading sysctl daemon
