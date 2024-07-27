@@ -77,6 +77,9 @@ fi\n
 - name: Installing packages
   yum:
     name: "{{ tools  }}"
+    state: present
+
+#checking tuned package is installed
 - name: check tuned
       shell: "service tuned status"
       register: val_tuned
