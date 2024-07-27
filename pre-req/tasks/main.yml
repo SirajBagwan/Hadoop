@@ -75,7 +75,7 @@ fi\n
       
 # Installing tools
 - name: Installing packages
-  yum:
+  ansible.builtin.yum:
     name: "{{ tools  }}"
     state: present
 
