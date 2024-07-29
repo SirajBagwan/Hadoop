@@ -9,5 +9,5 @@ tools:
   - openldap
   - lzo
   - lzop
-
+  - expect
 
