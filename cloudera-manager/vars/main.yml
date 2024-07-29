@@ -1,0 +1,12 @@
+---
+# vars file for cloudera-manager
+packages: 
+  - java
+  - cloudera-manager-server
+  - cloudera-manager-daemons
+  - cloudera-manager-client
+db_type: mysql
+db_host: myhost
+db_name: scm
+db_user: scm
+db_pass: password

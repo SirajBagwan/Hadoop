@@ -1,0 +1,32 @@
+---
+# tasks file for cloudera-manager
+# Setting up cloudera manager repo
+- name: Add YUM repository
+  ansible.builtin.yum_repository:
+    name: repolinnk
+    description: Installing Cloudera Manager repo 
+    baseurl: http://myrepo/cdp7/
+    gpgcheck: yes
+    gpgkey: http://myrepo/gpgkey/RPM-GPG-KEY-myrepo
+    enabled: yes
+
+- name: Clearing application cache 
+  shell: |
+    yum clean all
+    yum makecache
+
+- name: Installing java and cloudera-manager-server
+  ansible.builtin.yum:
+    name: "{{ packages }}"
+    state: present
+  register: val_install
+
+- name: Database connectivity
+  shell: "echo \"/opt/cloudera/cm/schema/scm_prepare_database.sh {{ db_type }} -h {{ db_host }} {{ db_name }} {{ db_user }} {{ db_pass }}\""
+  when: val_install.changed
+
+- name: Starting Cloudera-manager-server
+  ansible.builtin.service:
+    name: cloudera-scm-server
+    state: started
+
