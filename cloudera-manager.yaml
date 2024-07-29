@@ -1,0 +1,6 @@
+---
+- name: deploying cloudera manager
+  hosts: all
+  become: true
+  roles:
+    - cloudera-manager
