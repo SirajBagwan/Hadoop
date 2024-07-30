@@ -3,7 +3,7 @@
 # Setting up cloudera manager repo
 - name: Add YUM repository
   ansible.builtin.yum_repository:
-    name: repolinnk
+    name: cloudera-manager
     description: Installing Cloudera Manager repo 
     baseurl: http://myrepo/cdp7/
     gpgcheck: yes
