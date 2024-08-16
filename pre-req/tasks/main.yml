@@ -22,7 +22,7 @@
     reload: yes
   notify:
     - Checking swappiness
-    - Verifing swappiness
+    - Verifying swappiness
 
 # Disabling IPV6
 - name: Disabling IPV6
