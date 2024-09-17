@@ -1,18 +1,10 @@
 ---
-# Setting up Selinux
-- name: Checking Selinux is installed
-  shell: "getenforce"
-  register: val_selinux
-  ignore_errors: yes
-
 - name: Disable SELinux
   ansible.posix.selinux:
     state: disabled
   notify:
     - Print Selinux status
-  when:
-    val_selinux.rc == 0
-
+  
 # Setting swappiness to 1
 - name: Setting swappiness
   ansible.posix.sysctl:
@@ -20,10 +12,7 @@
     value: 1
     state: present
     reload: yes
-  notify:
-    - Checking swappiness
-    - Verifying swappiness
-
+  
 # Disabling IPV6
 - name: Disabling IPV6
   ansible.posix.sysctl:
@@ -31,32 +20,15 @@
     value: 1
     state: present
     reload: yes
-  notify:
-    - Checking IPV6
-    - Verifying IPV6
-
+  
 # Installing NameServer caching daemon
-- name: Verifying nscd package
-  shell: "nscd --version"
-  register: val_nscd
-  ignore_errors: yes
-
 - name: Installing NSCD
   yum:
     name: nscd
     state: present
-  when:
-    val_nscd.failed
-  notify:
-    - Verifying nscd package
-    - Starting nscd
-    - Displying nscd version
-
+    ignore_errors: true
+  
 # Disabling Transparent Huge Pages
-- name: check of script is already present in rc.local
-  shell: "grep \"/sys/kernel/mm/transparent_hugepage/enabled\" /etc/rc.local "
-  register: output_thp
-  ignore_errors: true
 
 - name: checking for THP
   shell: " echo \"if test -f /sys/kernel/mm/transparent_hugepage/enabled; then\n
@@ -66,12 +38,6 @@ if test -f /sys/kernel/mm/transparent_hugepage/defrag; then \n
   echo never > /sys/kernel/mm/transparent_hugepage/defrag \n
 fi\n
 \" >> /etc/rc.local"
-  when:
-    output_thp.rc != 0
-  notify:
-    - reloading rc.d
-    - verifying disbled thp
-    - Status of THP
       
 # Installing tools
 - name: Installing packages
@@ -79,24 +45,13 @@ fi\n
     name: "{{ tools  }}"
     state: present
 
-#checking tuned package is installed
-- name: check tuned
-      shell: "service tuned status"
-      register: val_tuned
-      ignore_errors: yes
-
 # Removing Tuned package
     - name: Removing tuned
       ansible.builtin.dnf:
          name: tuned
          state: removed
          autoremove: yes
-      when:
-        val_tuned.rc == 0
-      notify:
-        - Status of tuned
-        - Reloading sysctl daemon
-
+      
 # Setting up TCP Selective acknowledgement conf
 - name: Setting up TCP sack
       ansible.posix.sysctl:
