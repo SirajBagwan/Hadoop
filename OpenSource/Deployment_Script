@@ -1,0 +1,252 @@
+sudo adduser hadoopuser
+sudo adduser hadoopuser sudo
+su hadoopuser
+
+#setting up Passwordless login
+ssh-keygen
+cat  .ssh/id_ed25519.pub >> .ssh/authorized_keys
+**********copy this public key on every node in Hadoop cluster***********
+nano .ssh/config
+HOST * 
+StrictHostKeyChecking no
+UserKnownHostsFile = /dev/null
+
+# check password login 
+ssh localhost
+
+Now Setting up pre-req
+#Set Swappiness
+sudo nano /etc/sysctl.conf
+vm.swappiness = 0
+
+sudo sysctl -p
+
+#Temporary disable the selinux
+sudo nano /etc/selinux/config
+SELINUX = disabled
+# Enable after deployment
+
+# disable IPV6
+sudo nano /etc/sysctl.conf
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+
+# Disable iptables
+sudo iptables -L -n -V
+sudo iptables -F
+sudo iptables-save > iptablerules.backup
+
+sudo systemctl stop ufw
+sudo systemctl disable ufw
+
+#Disabling Transparent Hugepages
+sudo nano /etc/rc.local
+
+if test -f /sys/kernel/mm/transparent_hugepage/enabled; then
+  echo never > /sys/kernel/mm/transparent_hugepage/enabled
+fi
+if test -f /sys/kernel/mm/transparent_hugepage/defrag; then
+   echo never > /sys/kernel/mm/transparent_hugepage/defrag 
+fi
+
+sudo -i
+source /etc/rc.local
+exit
+
+#Setting up Timezone
+timedatectl status
+timedatectl list-timezones | grep Asia/Kolkata
+timedatectl set-timezone Asia/Kolakata
+
+#If you have have ntp server you can sync timezone with ntp
+
+#Setting up root reserved spaces
+sudo tune2fs -m 5 /dev/xvda1
+
+#Installing JAVA
+sudo apt install openjdk-8-jdk-headless -y
+
+# Installing Hadoop packages
+wget https://archive.apache.org/dist/hadoop/common/hadoop-2.7.5/hadoop-2.7.5.tar.gz
+tar -xzvf hadoop-2.7.5.tar.gz
+sudo mv hadoop-2.7.5 /usr/local/Hadoop
+
+#Configure .Bashrc with these configuration
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+export HADOOP_HOME=/usr/local/hadoop
+export PATH=$PATH:$HADOOP_HOME/bin
+export PATH=$PATH:$HADOOP_HOME/sbin
+export PATH=$PATH:/usr/local/hadoop/bin/
+export HADOOP_MAPRED_HOME=$HADOOP_HOME
+export HADOOP_COMMON_HOME=$HADOOP_HOME
+export HADOOP_HDFS_HOME=$HADOOP_HOME
+export YARN_HOME=$HADOOP_HOME
+export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop
+
+
+*****************Do above configurations on all of cluster nodes******************
+
+Configure /etc/hosts to use hostnames instead of ip
+
+*************** Configuring Hadoop Files *******************************
+cd /usr/local/Hadoop/etc/Hadoop
+
+#hadoop-env.sh
+nano hadoop-env.sh
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+export HADOOP_LOG_DIR=/var/log/hadoop/
+
+mkdir /var/log/Hadoop
+sudo chown -R hadoopuser /var/log/Hadoop
+
+#core-site.xml
+<property>
+    <name>fs.defaultFS</name>
+    <value>hdfs://nn:9000</value>
+</property>
+
+#hdfs-site.xml #on Namenode 
+<property>
+    <name>dfs.replication</name>
+    <value>3</value>
+  </property>
+  <property>
+    <name>dfs.namenode.name.dir</name>
+    <value>file:///usr/local/hadoop/data/hdfs/namenode</value>
+  </property>
+<property> 
+   <name>dfs.secondary.http.address</name>
+   <value>snn:50090</value>
+   <description>SecondaryNameNodeHostname</description>
+</property>
+ <property>
+    <name>dfs.datanode.name.dir</name>
+    <value>file:///usr/local/hadoop/data/hdfs/datanode</value>
+  </property>
+
+mkdir -p /usr/local/Hadoop/data/hdfs/namenode
+
+#hdfs-site.xml #on adatnode
+<property>
+    <name>dfs.replication</name>
+    <value>3</value>
+  </property>
+  <property>
+    <name>dfs.datanode.name.dir</name>
+    <value>file:///usr/local/hadoop/data/hdfs/datanode</value>
+  </property>
+
+mkdir -p /usr/local/Hadoop/data/hdfs/Datanode
+
+# Yarn-site.xml
+
+<property>
+     <name>yarn.nodemanager.aux-services</name>
+     <value>mapreduce_shuffle</value>
+   </property> 
+   <property>
+     <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+     <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+   </property>
+   <property>
+     <name>yarn.resourcemanager.hostname</name>
+     <value>rm</value>
+   </property>
+
+# mapred-site.xml
+<property>
+    <name>mapreduce.jobtracker.address</name>
+    <value>rm:54311</value>
+  </property>
+  <property>
+    <name>mapreduce.framework.name</name>
+    <value>yarn</value>
+  </property>
+
+# slaves
+add hostname of datanodes
+
+*******fromat namenode ***************
+hdfs namenode -format
+
+**********Starting daemons *************
+start-dfs.sh
+start-yarn.sh
+
+**************Integrating hive*************************
+wget https://archive.apache.org/dist/hive/hive-2.3.5/apache-hive-2.3.5-bin.tar.gz
+tar -xvzf apache-hive-2.3.5-bin.tar.gz
+sudo mv apache-hive-2.3.5-bin /usr/local/hive
+
+configuring .bashrc
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+export HADOOP_HOME=/usr/local/hadoop
+export PATH=$PATH:$HADOOP_HOME/bin
+export PATH=$PATH:$HADOOP_HOME/sbin
+export PATH=$PATH:/usr/local/hadoop/bin/
+export HADOOP_MAPRED_HOME=$HADOOP_HOME
+export HADOOP_COMMON_HOME=$HADOOP_HOME
+export HADOOP_HDFS_HOME=$HADOOP_HOME
+export YARN_HOME=$HADOOP_HOME
+export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop
+
+export HIVE_HOME=/usr/local/hive
+export PATH=$PATH:$HIVE_HOME/bin
+
+cd /usr/local/hive
+cp hive-env.sh.template hive-env.sh
+cp hive-default.xml.template hive-default.xml
+cd
+hiveserver2 start
+schematool -dbType derby -initSchema
+
+Create warehouse directory and give change ownership to hive
+hdfs dfs -mkdir /user/hive/warehouse
+hdfs dfs -chown -R hive /user/hive
+
+Now take access of hive terminal using hive or beeline
+hive
+*************************Hive Integration Complete **************************************
+********* If want to enable MySQL backend for metastore ************************
+Edit these properties in hive-default.xml
+Create MySQL table in MySQL server & create user and give all privileges to that user on table
+
+<property>
+  <name>javax.jdo.option.ConnectionURL</name>
+  <value>jdbc:mysql://localhost/metastore_db?createDatabaseIfNotExist=true</value>
+  <description>JDBC connect string for a JDBC metastore</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionDriverName</name>
+  <value>com.mysql.cj.jdbc.Driver</value>
+  <description>The JDBC driver class.</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionUserName</name>
+  <value>hiveuser</value>
+  <description>Username for connecting to the metastore database.</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionPassword</name>
+  <value>password</value>
+  <description>Password for connecting to the metastore database.</description>
+</property>
+
+<property>
+  <name>hive.metastore.schema.verification</name>
+  <value>false</value>
+  <description>Enables auto schema migration</description>
+</property>
+
+<property>
+  <name>datanucleus.autoCreateSchema</name>
+  <value>true</value>
+</property>
+
+schematool -dbType mysql -initSchema --verbose
+
+***********************************************************************************************************************
