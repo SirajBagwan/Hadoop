@@ -198,7 +198,7 @@ cd /usr/local/hive
 cp hive-env.sh.template hive-env.sh
 cp hive-default.xml.template hive-default.xml
 cd
-hiveserver2 start
+hiveserver2 start  #instead of this create .service at /etc/systemd/system/ path
 schematool -dbType derby -initSchema
 
 Create warehouse directory and give change ownership to hive
