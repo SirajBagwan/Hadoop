@@ -39,9 +39,6 @@ sudo iptables-save > iptablerules.backup
 sudo iptables -F
 sudo service iptables save
 
-sudo systemctl stop ufw
-sudo systemctl disable ufw
-
 #Disabling Transparent Hugepages
 sudo nano /etc/rc.local
 
