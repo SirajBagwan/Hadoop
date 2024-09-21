@@ -37,6 +37,7 @@ net.ipv6.conf.lo.disable_ipv6 = 1
 sudo iptables -L -n -V
 sudo iptables-save > iptablerules.backup
 sudo iptables -F
+sudo service iptables save
 
 sudo systemctl stop ufw
 sudo systemctl disable ufw
